@@ -3,6 +3,7 @@ using AutoMapper;
 using CommerceApi.DatabaseContext;
 using CommerceApi.Entities;
 using CommerceApi.Models;
+using CommerceApi.Models.UserModels;
 using Imagekit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -65,7 +66,7 @@ namespace CommerceApi.Controllers
             {
                 return NotFound();
             }
-            return sale;
+            return Ok(sale);
         }
         [Authorize(Policy = "ApiScopeAuthenticated")]
         // PUT: /Sales/5 ####To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
@@ -182,9 +183,14 @@ namespace CommerceApi.Controllers
         //GET user.claims /Sales/claims
         [HttpGet("claims")]
         [Authorize(Policy = "ApiScopeAuthenticated")]
-        public IActionResult GetClaims()
+        public ActionResult GetClaims()
         {
-            return new JsonResult(from c in User.Claims select new { c.Type, c.Value });
+            var currentUser=new RegisterModel();
+            currentUser.Id = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            currentUser.Email = User.FindFirst(ClaimTypes.Email).Value;
+            currentUser.UserName = User.FindFirstValue("UserName");
+            currentUser.PhoneNumber = int.Parse(User.FindFirstValue("PhoneNumber"));
+            return Ok(currentUser);
         }
     }
 }
